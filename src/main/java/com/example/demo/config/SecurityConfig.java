@@ -22,7 +22,12 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated() // Todas las solicitudes deben estar autenticadas
                 )
+                .csrf(csrf -> csrf.disable()) //Deshabilita CSRF
                 .httpBasic(Customizer.withDefaults()); // Habilita la autenticación básica (usuario y contraseña)
         return http.build();
     }
 }
+
+/* CSRF (Cross-Site Request Forgery) -> es un ataque que aprovecha una vulnerabilidad
+y falsifica una peticion web haciendose pasar por un user autorizado y a la hora
+de cambiar (PUT) un registro este no marque un status 401 */

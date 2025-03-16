@@ -3,6 +3,7 @@ package com.example.demo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,6 +25,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/*").permitAll() //permite denegar o dar acceso a los diferentes endpoint
+                        .requestMatchers(HttpMethod.PUT).denyAll() //Todo endpoint con un metodo PUT se denegara
                         .anyRequest().authenticated() // Todas las solicitudes deben estar autenticadas
                 )
                 .csrf(csrf -> csrf.disable()) // Deshabilita CSRF

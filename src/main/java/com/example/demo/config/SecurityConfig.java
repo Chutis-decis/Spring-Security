@@ -7,6 +7,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -25,8 +31,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/*").permitAll() //permite denegar o dar acceso a los diferentes endpoint
-                        .requestMatchers(HttpMethod.PUT).denyAll() //Todo endpoint con un metodo PUT se denegara
+                        .requestMatchers(HttpMethod.GET, "/*").hasAnyRole("ADMIN", "CUSTOMER") // tanto el cliente como el admin pueden ver los productos
+                        .requestMatchers(HttpMethod.GET, "/api/**").hasRole("ADMIN") //El admin podra vizualizar api/**
+                        .requestMatchers(HttpMethod.POST, "/**").hasRole("ADMIN") //solo el ADMIN podra poner nuevos registros
+                        .requestMatchers(HttpMethod.PUT).hasRole("ADMIN") //solamente el admin podrá modificar el menu
                         .anyRequest().authenticated() // Todas las solicitudes deben estar autenticadas
                 )
                 .csrf(csrf -> csrf.disable()) // Deshabilita CSRF
@@ -34,6 +42,27 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults()); // Habilita la autenticación básica (usuario y contraseña)
 
         return http.build();
+    }
+
+    @Bean
+    public UserDetailsService memoryUser(){
+        UserDetails admin = User.builder()
+                .username("admin")
+                .password(passwordEncoder().encode("admin"))
+                .roles("ADMIN").build();
+
+        UserDetails customer = User.builder()
+                .username("customer")
+                .password(passwordEncoder().encode("customer123"))
+                .roles("CUSTOMER").build();
+
+        return new InMemoryUserDetailsManager(admin, customer);
+
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){ //metodo que ayuda a que el password no este "muy visible"
+        return new BCryptPasswordEncoder();
     }
 
     // Configuración de CORS

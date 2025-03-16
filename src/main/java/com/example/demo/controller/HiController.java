@@ -16,4 +16,9 @@ public class HiController {
     public String hi() {
         return hiService.getMessage();
     }
+
+    @GetMapping("/api/pizzas")
+    public String getPizzas() {
+        return "Pizzas";
+    }
 }
